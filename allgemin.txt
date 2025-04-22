@@ -1,0 +1,2 @@
+Eine __init__.py-Datei dient in Python dazu, ein Verzeichnis als ein Python-Paket zu markieren.
+Sie wird beim Import des Pakets automatisch ausgeführt und kann Initialisierungscode für das Paket enthalten. --> Reddit

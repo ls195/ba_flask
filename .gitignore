@@ -1,0 +1,6 @@
+__pycache__
+allgemein.txt
+.venv
+.vscode
+app/models/__pycache__
+app/routes/__pycache__
