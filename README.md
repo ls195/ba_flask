@@ -1,2 +1,4 @@
 # flask_rest_ba
-Flask RestAPI nach Fielding für meine BA
+
+
+APP starten mit python run.py

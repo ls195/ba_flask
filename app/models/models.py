@@ -19,8 +19,12 @@ class Kunde(db.Model):
     geburtsdatum:Mapped[date]
     ledig:Mapped[int]
     rabatt:Mapped[float]
-    letzter_zugriff:Mapped[datetime]
+    letzter_zugriff:Mapped[datetime]= mapped_column(default=datetime.utcnow, nullable=False)
     k_a:Mapped[List["Auftrag"]]=relationship()
+    # __tabnle_args__ =(
+    #     {'autoload':True}
+    # )
+    
 
 class Auftrag(db.Model):
     __tablename__ = 'auftrag'
@@ -30,48 +34,48 @@ class Auftrag(db.Model):
     zahlungsziel:Mapped[date]
     zahlungseingang:Mapped[date]
     mahnung:Mapped[int]
-    fk_kunde:Mapped[int]=mapped_column(ForeignKey("kunde.kd_nr"))                   #Foreign key auf kunde.kd_nr  
-    fk_shop:Mapped[int]=mapped_column(ForeignKey("shop.shop_nr"))                   #Foreign key auf shop.shop_nr
+    fk_kunde:Mapped[int]=mapped_column(ForeignKey("kunde.kd_nr"), nullable=False)                   #Foreign key auf kunde.kd_nr  
+    fk_shop:Mapped[int]                                                             #  =mapped_column(ForeignKey("shop.shop_nr"))   Foreign key auf shop.shop_nr
     
 
 
 class Bestellposition(db.Model):
     __tableame__='bestellposition'
-    fk_auftrag:Mapped[int]=mapped_column(ForeignKey("auftrag.auft_nr"))
+    fk_auftrag:Mapped[int]=mapped_column(ForeignKey("auftrag.auft_nr"), autoincrement=False, nullable=True)
     position:Mapped[int]
-    fk_artikel:Mapped[int]=mapped_column(ForeignKey("artikel.art_nr"))
+    fk_artikel:Mapped[int]                                                          # =mapped_column(ForeignKey("artikel.art_nr"))
     anzahl:Mapped[int]
+    id:Mapped[int]=mapped_column(primary_key = True)
+    # __table_args__=(
+    #         PrimaryKeyConstraint('fk_auftrag', 'fk_artikel'),     #, 'fk_artikel'
+    #         )
 
-    __table_args__=(
-            PrimaryKeyConstraint('fk_auftrag', 'fk_artikel'),
-            )
-
-class Artikel(db.Model):
-    __tablename__='artikel'
-    art_nr:Mapped[int]=mapped_column(primary_key=True)
-    artikelbezeichnung:Mapped[str]
-    einzelpreis:Mapped[float]
-    gewicht:Mapped[float]
-    fk_hersteller:Mapped[float]=mapped_column(ForeignKey("hersteller.herst_nr"))
+# class Artikel(db.Model):
+#     __tablename__='artikel'
+#     art_nr:Mapped[int]=mapped_column(primary_key=True)
+#     artikelbezeichnung:Mapped[str]
+#     einzelpreis:Mapped[float]
+#     gewicht:Mapped[float]
+#     fk_hersteller:Mapped[float]=mapped_column(ForeignKey("hersteller.herst_nr"))
     
 
-class Hersteller(db.Model):
-    __tablename__='hersteller'
-    herst_nr:Mapped[int]=mapped_column(primary_key=True)
-    herstellerbezeichnung:Mapped[str]
+# class Hersteller(db.Model):
+#     __tablename__='hersteller'
+#     herst_nr:Mapped[int]=mapped_column(primary_key=True)
+#     herstellerbezeichnung:Mapped[str]
 
-class Stadt(db.Model):
-    __tablename__='stadt'
-    stadt_nr:Mapped[int]=mapped_column(primary_key=True)
-    stadt:Mapped[str]
-    lat:Mapped[float]
-    lot:Mapped[float]
+# class Stadt(db.Model):
+#     __tablename__='stadt'
+#     stadt_nr:Mapped[int]=mapped_column(primary_key=True)
+#     stadt:Mapped[str]
+#     lat:Mapped[float]
+#     lot:Mapped[float]
 
-class Shop(db.Model):
-    __tablename__='shop'
-    shop_nr:Mapped[int]=mapped_column(primary_key=True)
-    fk_shoptyp:Mapped[int]
-    strasse:Mapped[str]
-    plz:Mapped[str]
-    fk_stadt:Mapped[int]=mapped_column(ForeignKey("stadt.stadt_nr"))
-    s_a:Mapped[List["Auftrag"]]=relationship()                                         
+# class Shop(db.Model):
+#     __tablename__='shop'
+#     shop_nr:Mapped[int]=mapped_column(primary_key=True)
+#     fk_shoptyp:Mapped[int]
+#     strasse:Mapped[str]
+#     plz:Mapped[str]
+#     fk_stadt:Mapped[int]=mapped_column(ForeignKey("stadt.stadt_nr"))
+#     s_a:Mapped[List["Auftrag"]]=relationship()                                         

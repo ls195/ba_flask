@@ -1,8 +1,9 @@
 from flask import Flask
 from flask_restful import Api
-from app.extensions import db, jwt, cache
+from app.extensions import db, jwt, cache, ma
 from app.routes.auth import auth_bp  # Importiere Blueprint
 from app.routes import register_routes
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -11,11 +12,12 @@ register_routes(api)
 app.config.from_object('app.config.Config')         #Extension Guidelines: https://flask.palletsprojects.com/en/stable/extensiondev/
 #print("hello")
 db.init_app(app)
+
 jwt.init_app(app)
 cache.init_app(app)
-
+ma.init_app(app)
 # Blueprint registrieren
 app.register_blueprint(auth_bp)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=8000)

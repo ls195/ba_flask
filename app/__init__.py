@@ -1,9 +1,8 @@
 from flask import Flask
 from flask_restful import Api
-from .extensions import db, jwt, cache, api
+from .extensions import db, jwt, cache, api, ma
 from .routes import register_routes
 from flask_sqlalchemy import SQLAlchemy
-
 # Konfiguration, Extension-Init, etc.
  
 #print("hello")
@@ -15,7 +14,9 @@ def create_app():
     jwt.init_app(app)
     cache.init_app(app)
     api.init_app(app)
+    ma.init_app(app)
     register_routes(api)
+
     
 
     

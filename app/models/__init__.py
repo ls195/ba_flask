@@ -1,4 +1,4 @@
-from .models import Kunde, Auftrag, Artikel, Bestellposition, Artikel, Hersteller, Shop, Stadt
+from .models import Kunde, Auftrag, Bestellposition
 
 
 
