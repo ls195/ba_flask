@@ -6,57 +6,8 @@ from datetime import datetime, date, timedelta
 from app.extensions import cache, db, ma
 from app.models.models import Kunde, Auftrag, Bestellposition
 from app.schemas.schemas import KundeSchema, AuftragSchema, BestellpositionSchema, NeuerAuftragSchema
+from sqlalchemy.orm import selectinload
 
-class Service_C(Resource):          # Ressource ist eine Basisklasse aus Flask-Restful, kann post, get, put etc. definieren
-    def get(self):
-        kd_schema = KundeSchema(many=True)
-        all_kd=Kunde.query.all()
-        # db.session.add(all_kd)
-        # db.session.commit()
-        # kd_schema.dump(all_kd)                  # Serialize an object to native Python data types according to this Schema’s fields. --> https://marshmallow.readthedocs.io/en/stable/top_level.html#marshmallow.Schema.dumps
-        
-        return kd_schema.dump(all_kd), 200      # dump Serialisiert die Objete von JSON -> Python
-
-
-
-
-
-
-class Service_B(Resource):      
-    @cache.cached(timeout=60)                                               # Cache Service B - 60 Sekunden
-    @jwt_required()                                                         # JWT-Authorization
-    
-    def get(self, id):
-        stmt = select(Auftrag).where(Auftrag.fk_kunde==id)
-        result=db.session.execute(stmt)
-        result_body=dict()
-        auftrag=dict()
-        for auft in result.scalars():
-           # print(f"Auftragsnummer: {auft.auft_nr}")
-            str1="Auftrag "+str(auft.auft_nr)
-            auftrag[str1]={
-                     'datum':auft.bestelldat,
-                     'fk_shop':auft.fk_shop,
-                     'auft_daten':f"/auftrag/get/{auft.auft_nr}"
-                        }
-            
-            stmt2 = select(Bestellposition).where(Bestellposition.fk_auftrag==auft.auft_nr)
-            result2 =db.session.execute(stmt2)
-            
-            for bp in result2.scalars():
-                str2="position "+str(bp.position)
-                auftrag[str1][str2]=[]
-                auftrag[str1][str2].append({
-                    "Artikel Nr.":bp.fk_artikel, 
-                    "Anzahl":bp.anzahl                                  
-                                   })
-
-            result_body.update(auftrag)
-            
-        result_body["kunde_daten"] = f"/kunde/get/{id}"
-        resp = make_response(result_body)   
-        resp.headers['Cache-Control'] = "cachable"                                                      # marked as cachable
-        return resp
                 
 
                # https://flask.palletsprojects.com/en/stable/api/#flask.Response
@@ -120,42 +71,33 @@ class Service_A(Resource):
 
 
 
-
 class Service_B(Resource):      
-    @cache.cached(timeout=60)                                               # Cache Service B - 60 Sekunden
+    #@cache.cached(timeout=60)                                               # Cache Service B - 60 Sekunden
     @jwt_required()                                                         # JWT-Authorization
-    
-    def get(self, id):
-        stmt = select(Auftrag).where(Auftrag.fk_kunde==id)
-        result=db.session.execute(stmt)
-        result_body=dict()
-        auftrag=dict()
-        for auft in result.scalars():
-           # print(f"Auftragsnummer: {auft.auft_nr}")
-            str1="Auftrag "+str(auft.auft_nr)
-            auftrag[str1]={
-                     'datum':auft.bestelldat,
-                     'fk_shop':auft.fk_shop,
-                     'auft_daten':f"/auftrag/get/{auft.auft_nr}"
-                        }
-            
-            stmt2 = select(Bestellposition).where(Bestellposition.fk_auftrag==auft.auft_nr)
-            result2 =db.session.execute(stmt2)
-            
-            for bp in result2.scalars():
-                str2="position "+str(bp.position)
-                auftrag[str1][str2]=[]
-                auftrag[str1][str2].append({
-                    "Artikel Nr.":bp.fk_artikel, 
-                    "Anzahl":bp.anzahl                                  
-                                   })
 
-            result_body.update(auftrag)
-            
+    def get(self, id):
+        stmt = select(Auftrag).options(selectinload(Auftrag.bestellpositionen)).where(Auftrag.fk_kunde == id)
+        result = db.session.execute(stmt).scalars().all()
+        
+        result_body = {}
+        for auft in result:
+            str1 = f"Auftrag {auft.auft_nr}"
+            result_body[str1] = {
+                'datum': auft.bestelldat,
+                'fk_shop': auft.fk_shop,
+                'auft_daten': f"/auftrag/get/{auft.auft_nr}",
+            }
+            for bp in auft.bestellpositionen:
+                str2 = f"position {bp.position}"
+                result_body[str1][str2] = [{
+                    "Artikel Nr.": bp.fk_artikel,
+                    "Anzahl": bp.anzahl
+                }]
         result_body["kunde_daten"] = f"/kunde/get/{id}"
-        resp = make_response(result_body)   
-        resp.headers['Cache-Control'] = "cachable"                                                      # marked as cachable
+        
+        resp = make_response(result_body)                       # Wichtig - Response objekt für die Doku
+        resp.headers['Cache-Control'] = "public, max-age=60"  # cache_control Header
         return resp
-                
+
 
 

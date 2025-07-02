@@ -28,24 +28,50 @@ class Kunde(db.Model):
 
 class Auftrag(db.Model):
     __tablename__ = 'auftrag'
-    auft_nr:Mapped[int]=mapped_column(primary_key = True)
-    bestelldat:Mapped[date]
-    lieferdat:Mapped[date]
-    zahlungsziel:Mapped[date]
-    zahlungseingang:Mapped[date]
-    mahnung:Mapped[int]
-    fk_kunde:Mapped[int]=mapped_column(ForeignKey("kunde.kd_nr"), nullable=False)                   #Foreign key auf kunde.kd_nr  
-    fk_shop:Mapped[int]                                                             #  =mapped_column(ForeignKey("shop.shop_nr"))   Foreign key auf shop.shop_nr
-    
+    auft_nr: Mapped[int] = mapped_column(primary_key=True)
+    bestelldat: Mapped[date]
+    lieferdat: Mapped[date]
+    zahlungsziel: Mapped[date]
+    zahlungseingang: Mapped[date]
+    mahnung: Mapped[int]
+    fk_kunde: Mapped[int] = mapped_column(ForeignKey("kunde.kd_nr"), nullable=False)
+    fk_shop: Mapped[int]
+
+    # Beziehung zu Bestellposition ergänzen
+    bestellpositionen: Mapped[List["Bestellposition"]] = relationship("Bestellposition", back_populates="auftrag")
 
 
 class Bestellposition(db.Model):
-    __tableame__='bestellposition'
-    fk_auftrag:Mapped[int]=mapped_column(ForeignKey("auftrag.auft_nr"), autoincrement=False, nullable=True)
-    position:Mapped[int]
-    fk_artikel:Mapped[int]                                                          # =mapped_column(ForeignKey("artikel.art_nr"))
-    anzahl:Mapped[int]
-    id:Mapped[int]=mapped_column(primary_key = True)
+    __tablename__ = 'bestellposition'  # Tippfehler korrigiert (__tablename__)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    fk_auftrag: Mapped[int] = mapped_column(ForeignKey("auftrag.auft_nr"), autoincrement=False, nullable=True)
+    position: Mapped[int]
+    fk_artikel: Mapped[int]
+    anzahl: Mapped[int]
+
+    # Beziehung zum Auftrag ergänzen
+    auftrag: Mapped["Auftrag"] = relationship("Auftrag", back_populates="bestellpositionen")
+
+# class Auftrag(db.Model):
+#     __tablename__ = 'auftrag'
+#     auft_nr:Mapped[int]=mapped_column(primary_key = True)
+#     bestelldat:Mapped[date]
+#     lieferdat:Mapped[date]
+#     zahlungsziel:Mapped[date]
+#     zahlungseingang:Mapped[date]
+#     mahnung:Mapped[int]
+#     fk_kunde:Mapped[int]=mapped_column(ForeignKey("kunde.kd_nr"), nullable=False)                   #Foreign key auf kunde.kd_nr  
+#     fk_shop:Mapped[int]                                                             #  =mapped_column(ForeignKey("shop.shop_nr"))   Foreign key auf shop.shop_nr
+       
+
+
+# class Bestellposition(db.Model):
+#     __tableame__='bestellposition'
+#     fk_auftrag:Mapped[int]=mapped_column(ForeignKey("auftrag.auft_nr"), autoincrement=False, nullable=True)
+#     position:Mapped[int]
+#     fk_artikel:Mapped[int]                                                          # =mapped_column(ForeignKey("artikel.art_nr"))
+#     anzahl:Mapped[int]
+#     id:Mapped[int]=mapped_column(primary_key = True)
     # __table_args__=(
     #         PrimaryKeyConstraint('fk_auftrag', 'fk_artikel'),     #, 'fk_artikel'
     #         )
