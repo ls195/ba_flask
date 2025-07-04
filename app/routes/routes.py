@@ -23,12 +23,12 @@ class Service_A(Resource):
         auftrag_input = data.get("auftrag")
         bestellpos_input = data.get("bestellpositionen")  
 
-        kunde_schema = KundeSchema()
+        kunde_schema = KundeSchema()                                                                    # Schema von Marshmellow für komplexe Serialisierungen
         auftrag_schema = AuftragSchema()
         bestellposition_schema = BestellpositionSchema(many=True)
 
         # 1. Prüfen ob Kunde existiert
-        kunde_query = db.session.query(Kunde).filter(
+        kunde_query = db.session.query(Kunde).filter(                                                   # Querrying mit SQLAlchemy (ORM); filter() == SQL: Where(...)
             (Kunde.vorname == kunde_input["vorname"]) &
             (Kunde.nachname == kunde_input["nachname"]) &
             (Kunde.geburtsdatum == kunde_input["geburtsdatum"])
@@ -38,7 +38,7 @@ class Service_A(Resource):
 
         if not kunde:
             # Kunde existiert nicht → neu anlegen
-            kunde = kunde_schema.load(kunde_input, session=db.session)
+            kunde = kunde_schema.load(kunde_input, session=db.session)                                  # Hier wird das Session von SQLAlchemy mit der load(Schema..) von Marshmallow verknüpft
             kunde.letzter_zugriff = datetime.utcnow()
             db.session.add(kunde)
             db.session.commit()  # Jetzt hat Kunde eine kd_nr
@@ -76,8 +76,8 @@ class Service_B(Resource):
     @jwt_required()                                                         # JWT-Authorization
 
     def get(self, id):
-        stmt = select(Auftrag).options(selectinload(Auftrag.bestellpositionen)).where(Auftrag.fk_kunde == id)
-        result = db.session.execute(stmt).scalars().all()
+        stmt = select(Auftrag).options(selectinload(Auftrag.bestellpositionen)).where(Auftrag.fk_kunde == id)      # SQLAlchemy Queries (ORM)
+        result = db.session.execute(stmt).scalars().all()                                                          # SQLAlchemy Session -> https://docs.sqlalchemy.org/en/20/orm/quickstart.html                                                  
         
         result_body = {}
         for auft in result:
